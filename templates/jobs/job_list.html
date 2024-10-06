@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+<h1>Job Listings</h1>
+<ul>
+    {% for job in jobs %}
+        <li>
+            <strong>{{ job.title }}</strong> - {{ job.company_name }}
+            <br> <a href="{{ job.application_link }}" target="_blank">Apply</a>
+        </li>
+    {% endfor %}
+</ul>
+

@@ -41,7 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'jobs.apps.JobsConfig'
+    'jobs.apps.JobsConfig',
+    'django_celery_beat',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -81,10 +83,15 @@ WSGI_APPLICATION = 'jobBoards.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
+
 
 
 # Password validation
@@ -132,3 +139,21 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
     "/var/www/static/",
 ]
+
+# Celery settings
+
+
+CELERY_BEAT_SCHEDULE = {
+    'fetch-jobs-every-24-hours': {
+        'task': 'jobs.tasks.fetch_jobs_from_api',
+        'schedule': 60.0,  # 2 second
+    },
+}
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_RESULT_BACKEND = 'django-db'
