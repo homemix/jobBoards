@@ -12,13 +12,13 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -31,7 +31,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,9 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'jobs.apps.JobsConfig',
+
     'django_celery_beat',
     'django_celery_results',
+    'job.apps.JobConfig'
 ]
 
 MIDDLEWARE = [
@@ -77,7 +77,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'jobBoards.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -91,8 +90,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -112,7 +109,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -123,7 +119,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -144,9 +139,9 @@ STATICFILES_DIRS = [
 
 
 CELERY_BEAT_SCHEDULE = {
-    'fetch-jobs-every-24-hours': {
-        'task': 'jobs.tasks.fetch_jobs_from_api',
-        'schedule': 60.0,  # 2 second
+    'fetch-remote-jobs-every-hour': {
+        'task': 'job.tasks.fetch_and_save_jobs',
+        'schedule': crontab(minute=2),  # Runs every hour
     },
 }
 
