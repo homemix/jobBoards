@@ -8,7 +8,7 @@ from .models import Job, JobTag  # Adjust the import according to your project s
 @shared_task
 def fetch_and_save_jobs():
     # Fetch the job data from the API
-    url = 'https://remotive.io/api/remote-jobs?limit=10'
+    url = 'https://remotive.io/api/remote-jobs?limit=500'
     response = requests.get(url)
 
     if response.status_code == 200:
