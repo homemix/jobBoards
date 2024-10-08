@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .login-container {
+            margin-top: 100px;
+        }
+
+        .login-form {
+            background-color: #f7f7f7;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-form h3 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container login-container">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="login-form">
+                <h3>Login</h3>
+
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+
+                    <!-- Username/Email Input -->
+                    <div class="form-group">
+                        <label for="username">Username or Email</label>
+                        <input type="text" name="username" class="form-control" id="username"
+                               placeholder="Enter username or email" required>
+                        {% if form.username.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for error in form.username.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Input -->
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" class="form-control" id="password"
+                               placeholder="Enter password" required>
+                        {% if form.password.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for error in form.password.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-block">Log In</button>
+
+                    <!-- Additional Options -->
+                    <div class="text-center mt-3">
+                        <a href="{% url 'password_reset' %}">Forgot your password?</a>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'register' %}">Or register here.</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS (optional) -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.11/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

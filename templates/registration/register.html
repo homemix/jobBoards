@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .register-container {
+            margin-top: 100px;
+        }
+
+        .register-form {
+            background-color: #f7f7f7;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .register-form h3 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container register-container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="register-form">
+                <h3>Register</h3>
+                <form method="POST" action="{% url 'register' %}">
+                    {% csrf_token %}
+
+                    <!-- Email Input -->
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" class="form-control" id="email" placeholder="Enter email"
+                               required>
+                    </div>
+
+                    <!-- Username Input -->
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" name="username" class="form-control" id="username"
+                               placeholder="Enter username" required>
+                    </div>
+
+                    <!-- Password Input -->
+                    <div class="form-group">
+                        <label for="password1">Password</label>
+                        <input type="password" name="password1" class="form-control" id="password1"
+                               placeholder="Enter password" required>
+                    </div>
+
+                    <!-- Confirm Password Input -->
+                    <div class="form-group">
+                        <label for="password2">Confirm Password</label>
+                        <input type="password" name="password2" class="form-control" id="password2"
+                               placeholder="Confirm password" required>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-block">Register</button>
+                </form>
+
+                <!-- Already have an account -->
+                <div class="text-center mt-3">
+                    <a href="{% url 'login' %}">Already have an account? Log in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS (optional) -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.11/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

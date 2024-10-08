@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'accounts',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -43,7 +44,8 @@ INSTALLED_APPS = [
 
     'django_celery_beat',
     'django_celery_results',
-    'job.apps.JobConfig'
+    'job.apps.JobConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -134,10 +136,15 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
     "/var/www/static/",
 ]
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+LOGIN_URL = '/login/'  # or 'login/' if using reverse
+LOGIN_REDIRECT_URL = '/jobs/'
+
 
 # Celery settings
-
-
 CELERY_BEAT_SCHEDULE = {
     'fetch-remote-jobs-every-hour': {
         'task': 'job.tasks.fetch_and_save_jobs',
@@ -156,3 +163,12 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Africa/Nairobi'
 CELERY_RESULT_BACKEND = 'django-db'
+
+# Email Backend Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST =os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_HOST',587)
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+

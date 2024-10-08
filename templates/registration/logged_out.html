@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Logout Successful</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="text-center">
+        <h1 class="display-4">Logout Successful!</h1>
+        <p class="lead">You have been successfully logged out.</p>
+        <a href="{% url 'login' %}" class="btn btn-primary">Login Again</a>
+{#        <a href="{% url 'job_home' %}" class="btn btn-secondary">Go to Home</a>#}
+    </div>
+</body>
+</html>
