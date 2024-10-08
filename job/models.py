@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Job(models.Model):
@@ -18,6 +19,14 @@ class Job(models.Model):
     def __str__(self):
         return self.title
 
+    @classmethod
+    def category_count(cls):
+        """
+        Return a dictionary with categories as keys and the count of jobs in each category as values.
+        """
+        return (cls.objects.values('category').annotate(job_count=models.Count('category'))
+                .order_by('-job_count')[:8])
+
 
 class JobTag(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='tags')
@@ -26,6 +35,7 @@ class JobTag(models.Model):
     def __str__(self):
         return self.tag
 
+
 class JobCategory(models.Model):
     remotive_id = models.IntegerField(unique=True)
     name = models.CharField(max_length=255)
@@ -33,3 +43,14 @@ class JobCategory(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Resume(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    job_title = models.CharField(max_length=500)
+    company = models.CharField(max_length=500, null=True, blank=True)
+    years_of_experience = models.IntegerField(null=True, blank=True)
+    skills = models.TextField(blank=True, null=True)  # Store extracted skills
+
+    def __str__(self):
+        return f"{self.user}'s resume"
