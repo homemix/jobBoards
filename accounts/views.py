@@ -40,7 +40,8 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     messages.success(request, "You have been logged out.")
-    return redirect('job_home')
+    return redirect('logout_success')
 
 def logout_success(request):
-    return render(request, 'registration/logged_out.html')
+    messages.success(request, "You have been logged out.")
+    return render(request, 'registration/logged_out_success.html')
