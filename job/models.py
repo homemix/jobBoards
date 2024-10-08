@@ -51,6 +51,8 @@ class Resume(models.Model):
     company = models.CharField(max_length=500, null=True, blank=True)
     years_of_experience = models.IntegerField(null=True, blank=True)
     skills = models.TextField(blank=True, null=True)  # Store extracted skills
+    summary = models.TextField(blank=True, null=True)  # Store extracted skills
+    categories = models.TextField(blank=True, null=True)  # Store extracted skills
 
     def __str__(self):
         return f"{self.user}'s resume"

@@ -1,6 +1,7 @@
+from celery import shared_task
 from django.contrib import messages
 from django.shortcuts import render, redirect
-
+from job.tasks import extract_resume_info
 from job.models import Job
 
 import os
@@ -43,32 +44,6 @@ def job_detail(request):
     return render(request, 'jobs/job_detail.html')
 
 
-# nlp = spacy.load("en_core_web_sm")
-
-def extract_resume_info(text):
-    """
-    Extract job title, experience, and skills from the resume text using NLP.
-    """
-    doc = nlp(text)
-    job_title = None
-    experience = None
-    skills = []
-
-    # Extract named entities for job titles and experience
-    for ent in doc.ents:
-        if ent.label_ == "ORG":
-            job_title = ent.text  # Simplified, you can improve this
-        if ent.label_ == "DATE":
-            # This is a placeholder. Improve this logic based on your needs.
-            experience = int(ent.text) if ent.text.isdigit() else 0
-
-    # Example of finding skill keywords in the resume (you can improve with a skill dictionary)
-    skill_keywords = ['Python', 'Django', 'Java', 'Machine Learning', 'Data Science']
-    for token in doc:
-        if token.text in skill_keywords:
-            skills.append(token.text)
-
-    return job_title, experience, ', '.join(skills)
 
 
 @login_required
@@ -85,15 +60,17 @@ def upload_resume(request):
             # Extract text from the resume
             extracted_text = textract.process(file_path).decode('utf-8')
 
-            # Use NLP techniques to extract job titles, experience, and skills
-            job_title, experience, skills = extract_resume_info(extracted_text)
+            # Use NLP techniques to extract job title, experience, skills, categories, and summary
+            job_title, experience, skills, categories, summary = extract_resume_info(extracted_text)
 
             # Save the extracted data to the database
             resume = Resume.objects.create(
                 user=request.user,
                 job_title=job_title,
                 years_of_experience=experience,
-                skills=skills
+                skills=skills,
+                categories=', '.join(categories),  # Assuming you have a field for categories
+                summary=summary  # Assuming you have a field for summary
             )
             resume.save()
             messages.success(request, "Your resume is saved successfully")
@@ -102,8 +79,9 @@ def upload_resume(request):
             # return render(request, 'resume_uploaded.html', {'resume': resume})
     else:
         form = ResumeUploadForm()
+        messages.error(request,'Upload not working...')
 
-    return redirect('job_home')
+        return redirect('job_home')
     # return render(request, 'jobs/index.html', {'form': form})
 
 
