@@ -141,7 +141,11 @@ STATICFILES_DIRS = [
 CELERY_BEAT_SCHEDULE = {
     'fetch-remote-jobs-every-hour': {
         'task': 'job.tasks.fetch_and_save_jobs',
-        'schedule': crontab(minute=2),  # Runs every hour
+        'schedule': crontab(minute=0, hour='*/6'),  # Runs every 6 hours
+    },
+    'fetch-job-categories-every-6-hours': {
+        'task': 'job.tasks.fetch_and_save_job_categories',
+        'schedule': crontab(minute=0, hour='*/6'),  # Every 6 hours
     },
 }
 

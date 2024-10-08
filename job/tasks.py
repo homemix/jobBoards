@@ -2,7 +2,7 @@
 
 import requests
 from celery import shared_task
-from .models import Job, JobTag  # Adjust the import according to your project structure
+from .models import Job, JobTag, JobCategory  # Adjust the import according to your project structure
 
 
 @shared_task
@@ -41,3 +41,30 @@ def fetch_and_save_jobs():
         print("Jobs have been saved successfully!")
     else:
         print("Failed to fetch data from Remotive API. Status code:", response.status_code)
+
+
+API_URL = 'https://remotive.com/api/remote-jobs/categories'
+
+
+@shared_task
+def fetch_and_save_job_categories():
+    # Fetch data from API
+    response = requests.get(API_URL)
+
+    if response.status_code == 200:
+        data = response.json()
+
+        # Iterate through the categories and save them to the database
+        jobs = data.get('jobs', [])
+        for job in jobs:
+            category_id = job.get('id')
+            name = job.get('name')
+            slug = job.get('slug')
+
+            # Create or update JobCategory in the database
+            JobCategory.objects.update_or_create(
+                remotive_id=category_id,
+                defaults={'name': name, 'slug': slug}
+            )
+    else:
+        print(f"Failed to fetch job categories. Status code: {response.status_code}")

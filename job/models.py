@@ -25,3 +25,11 @@ class JobTag(models.Model):
 
     def __str__(self):
         return self.tag
+
+class JobCategory(models.Model):
+    remotive_id = models.IntegerField(unique=True)
+    name = models.CharField(max_length=255)
+    slug = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
