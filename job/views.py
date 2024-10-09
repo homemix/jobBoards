@@ -1,5 +1,6 @@
 from celery import shared_task
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db import models
 from django.shortcuts import render, redirect
 from job.tasks import extract_resume_info
@@ -70,11 +71,33 @@ def index(request):
 
 
 def job_list(request):
-    return render(request, 'jobs/job_list.html')
+    # Get the search query from the request
+    search_query = request.GET.get('search', '').strip()
 
+    # Start with all jobs
+    all_jobs = Job.objects.all()
 
-def job_detail(request):
-    return render(request, 'jobs/job_detail.html')
+    # Filter by search query if it exists
+    if search_query:
+        all_jobs = all_jobs.filter(
+            models.Q(title__icontains=search_query) |  # Match by job title
+            models.Q(category__icontains=search_query) |  # Match by category
+            models.Q(description__icontains=search_query) |  # Match by description
+            models.Q(tags__tag__icontains=search_query)  # Match by job tag
+        ).distinct()  # Ensure unique results
+
+    # Get the total count of jobs after filtering
+    total_jobs = all_jobs.count()
+    paginator = Paginator(all_jobs, 10)  # Show 5 jobs per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'jobs': page_obj,
+        'total_jobs': total_jobs,
+        'search_query': search_query,  # Pass the search query to the template
+    }
+    return render(request, 'jobs/job_list.html', context)
 
 
 @login_required
