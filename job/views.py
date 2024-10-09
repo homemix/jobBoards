@@ -1,8 +1,10 @@
 from celery import shared_task
 from django.contrib import messages
+from django.db import models
 from django.shortcuts import render, redirect
 from job.tasks import extract_resume_info
-from job.models import Job
+
+from django.shortcuts import get_object_or_404
 
 import os
 import textract
@@ -12,11 +14,12 @@ import spacy
 nlp = spacy.load("en_core_web_sm")
 
 from .forms import ResumeUploadForm
-from .models import Resume
-from django.shortcuts import render
+
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
+from django.shortcuts import render
+from .models import Job, Resume, JobTag
 
 try:
     nlp = spacy.load("en_core_web_sm")
@@ -25,11 +28,41 @@ except OSError as e:
     print(f"Error loading SpaCy model: {e}")
 
 
+@login_required
 def index(request):
     category_counts = Job.category_count()
     form = ResumeUploadForm()
+    resume = Resume.objects.filter(user=request.user).last()
+
+    # Split skills into individual skill keywords
+    skills_list = [skill.strip() for skill in resume.skills.split(',') if skill]
+
+    # Build a Q object for skill matching using OR conditions for each skill
+    skills_query = models.Q()
+    for skill in skills_list:
+        skills_query |= models.Q(description__icontains=skill)
+
+    # Now, filter the jobs based on the categories, skills, or summary
+    matching_jobs = Job.objects.filter(
+        models.Q(category__in=[category.strip() for category in resume.categories.split(',') if
+                               category]) |  # Match by categories
+        skills_query |  # Match any skill from the resume
+        models.Q(description__icontains=resume.summary)  # Match by summary
+    ).distinct()
+
+    # Additional filtering by job tags (if job tags are associated with jobs)
+    job_tags = JobTag.objects.filter(tag__in=resume.skills.split(',')).values_list('job', flat=True)
+    tagged_jobs = Job.objects.filter(id__in=job_tags).distinct()
+
+    # Combine both job lists
+    all_matching_jobs = matching_jobs | tagged_jobs
+    all_matching_jobs = all_matching_jobs.distinct()[:10]
+
+    print(f'matching:{all_matching_jobs}')
+
     context = {
         'category_counts': category_counts,
+        'matching_jobs': all_matching_jobs,
         'form': form,
     }
 
@@ -42,8 +75,6 @@ def job_list(request):
 
 def job_detail(request):
     return render(request, 'jobs/job_detail.html')
-
-
 
 
 @login_required
@@ -79,26 +110,12 @@ def upload_resume(request):
             # return render(request, 'resume_uploaded.html', {'resume': resume})
     else:
         form = ResumeUploadForm()
-        messages.error(request,'Upload not working...')
+        messages.error(request, 'Upload not working...')
 
         return redirect('job_home')
     # return render(request, 'jobs/index.html', {'form': form})
 
 
-def get_matching_jobs(user_resume):
-    """
-    Find matching jobs based on the user's resume data.
-    """
-    jobs = Job.objects.filter(
-        category__icontains=user_resume.job_title,  # Match job title or category
-        description__icontains=user_resume.skills  # Match skills with job descriptions
-    )
-    return jobs
-
-
-@login_required
-def show_matching_jobs(request):
-    user_resume = Resume.objects.get(user=request.user)
-    matching_jobs = get_matching_jobs(user_resume)
-
-    return render(request, 'jobs/matching_jobs.html', {'jobs': matching_jobs})
+def job_detail(request, job_id):
+    job = get_object_or_404(Job, id=job_id)
+    return render(request, 'jobs/job_detail.html', {'job': job})
