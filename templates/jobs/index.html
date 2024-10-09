@@ -44,7 +44,7 @@
                                     <span class="flaticon-tour"></span>
                                 </div>
                                 <div class="services-cap">
-                                    <h5><a href="{% url 'job_list' %}">{{ category.category }}</a></h5>
+                                    <h5><a href="{% url 'job_list' %}?search={{ category.category }}">{{ category.category }}</a></h5>
                                     <span>({{ category.job_count }})</span>
                                 </div>
                             </div>
