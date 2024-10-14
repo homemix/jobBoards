@@ -129,17 +129,27 @@ def upload_resume(request):
             # Use NLP techniques to extract job title, experience, skills, categories, and summary
             job_title, experience, skills, categories, summary = extract_resume_info(extracted_text)
 
-            # Save the extracted data to the database
-            resume = Resume.objects.create(
+            # Save the extracted data to the database (create or update)
+            resume, created = Resume.objects.update_or_create(
                 user=request.user,
-                job_title=job_title,
-                years_of_experience=experience,
-                skills=skills,
-                categories=', '.join(categories),  # Assuming you have a field for categories
-                summary=summary  # Assuming you have a field for summary
+                defaults={
+                    'job_title': job_title,
+                    'years_of_experience': experience,
+                    'skills': skills,
+                    'categories': ', '.join(categories),  # Assuming you have a field for categories
+                    'summary': summary  # Assuming you have a field for summary
+                }
             )
-            resume.save()
-            messages.success(request, "Your resume is saved successfully")
+
+            # Optional: Print to check whether it was created or updated
+            if created:
+                print("New resume created.")
+                messages.success(request, "Your resume is saved successfully")
+            else:
+                print("Existing resume updated.")
+                messages.success(request, "Your resume updated successfully")
+            # resume.save()
+
             return redirect('job_home')
 
             # return render(request, 'resume_uploaded.html', {'resume': resume})
