@@ -34,44 +34,51 @@ def index(request):
     category_counts = Job.category_count()
     form = ResumeUploadForm()
     resume = Resume.objects.filter(user=request.user).last()
+    if resume:
 
-    if resume and resume.skills:
-        # Split skills into individual skill keywords
-        skills_list = [skill.strip() for skill in resume.skills.split(',') if skill]
+        if resume and resume.skills:
+            # Split skills into individual skill keywords
+            skills_list = [skill.strip() for skill in resume.skills.split(',') if skill]
+        else:
+            skills_list=[]
+
+        # Build a Q object for skill matching using OR conditions for each skill
+        skills_query = models.Q()
+        for skill in skills_list:
+            skills_query |= models.Q(description__icontains=skill)
+
+        default_categories = ['general', 'misc']  # Example defaults
+        categories = resume.categories if resume and resume.categories else ''
+        category_list = [category.strip() for category in categories.split(',') if category] or default_categories
+
+        # Now, filter the jobs based on the categories, skills, or summary
+        matching_jobs = Job.objects.filter(
+            models.Q(category__in=category_list )|  # Match by categories
+            skills_query |  # Match any skill from the resume
+            models.Q(description__icontains=resume.summary)  # Match by summary
+        ).distinct()
+
+        # Additional filtering by job tags (if job tags are associated with jobs)
+        job_tags = JobTag.objects.filter(tag__in=resume.skills.split(',')).values_list('job', flat=True)
+        tagged_jobs = Job.objects.filter(id__in=job_tags).distinct()
+
+        # Combine both job lists
+        all_matching_jobs = matching_jobs | tagged_jobs
+        all_matching_jobs = all_matching_jobs.distinct()[:10]
+
+        print(f'matching:{all_matching_jobs}')
+
+        context = {
+            'category_counts': category_counts,
+            'matching_jobs': all_matching_jobs,
+            'form': form,
+        }
     else:
-        skills_list=[]
-
-    # Build a Q object for skill matching using OR conditions for each skill
-    skills_query = models.Q()
-    for skill in skills_list:
-        skills_query |= models.Q(description__icontains=skill)
-
-    default_categories = ['general', 'misc']  # Example defaults
-    categories = resume.categories if resume and resume.categories else ''
-    category_list = [category.strip() for category in categories.split(',') if category] or default_categories
-
-    # Now, filter the jobs based on the categories, skills, or summary
-    matching_jobs = Job.objects.filter(
-        models.Q(category__in=category_list )|  # Match by categories
-        skills_query |  # Match any skill from the resume
-        models.Q(description__icontains=resume.summary)  # Match by summary
-    ).distinct()
-
-    # Additional filtering by job tags (if job tags are associated with jobs)
-    job_tags = JobTag.objects.filter(tag__in=resume.skills.split(',')).values_list('job', flat=True)
-    tagged_jobs = Job.objects.filter(id__in=job_tags).distinct()
-
-    # Combine both job lists
-    all_matching_jobs = matching_jobs | tagged_jobs
-    all_matching_jobs = all_matching_jobs.distinct()[:10]
-
-    print(f'matching:{all_matching_jobs}')
-
-    context = {
-        'category_counts': category_counts,
-        'matching_jobs': all_matching_jobs,
-        'form': form,
-    }
+        context = {
+            'category_counts': 0,
+            'matching_jobs': [],
+            'form': form,
+        }
 
     return render(request, 'jobs/index.html', context)
 
