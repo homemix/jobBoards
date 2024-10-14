@@ -75,7 +75,7 @@ def index(request):
         }
     else:
         context = {
-            'category_counts': 0,
+            'category_counts': category_counts,
             'form': form,
         }
 
