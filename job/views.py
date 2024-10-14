@@ -76,7 +76,6 @@ def index(request):
     else:
         context = {
             'category_counts': 0,
-            'matching_jobs': [],
             'form': form,
         }
 
