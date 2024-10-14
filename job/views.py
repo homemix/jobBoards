@@ -35,8 +35,11 @@ def index(request):
     form = ResumeUploadForm()
     resume = Resume.objects.filter(user=request.user).last()
 
-    # Split skills into individual skill keywords
-    skills_list = [skill.strip() for skill in resume.skills.split(',') if skill]
+    if resume and resume.skills:
+        # Split skills into individual skill keywords
+        skills_list = [skill.strip() for skill in resume.skills.split(',') if skill]
+    else:
+        skills_list=[]
 
     # Build a Q object for skill matching using OR conditions for each skill
     skills_query = models.Q()
