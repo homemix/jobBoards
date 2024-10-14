@@ -46,10 +46,13 @@ def index(request):
     for skill in skills_list:
         skills_query |= models.Q(description__icontains=skill)
 
+    default_categories = ['general', 'misc']  # Example defaults
+    categories = resume.categories if resume and resume.categories else ''
+    category_list = [category.strip() for category in categories.split(',') if category] or default_categories
+
     # Now, filter the jobs based on the categories, skills, or summary
     matching_jobs = Job.objects.filter(
-        models.Q(category__in=[category.strip() for category in resume.categories.split(',') if
-                               category]) |  # Match by categories
+        models.Q(category__in=category_list )|  # Match by categories
         skills_query |  # Match any skill from the resume
         models.Q(description__icontains=resume.summary)  # Match by summary
     ).distinct()
